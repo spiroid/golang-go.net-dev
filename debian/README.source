@@ -1,0 +1,2 @@
+hg clone https://code.google.com/p/go.net/
+tar czvf go.net_0.0~hg67397a11592e.orig.tar.gz go.net --exclude=.hg
