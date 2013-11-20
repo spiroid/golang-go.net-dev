@@ -2,17 +2,19 @@ Source: golang-go.net-dev
 Section: devel
 Priority: extra
 Maintainer: Jonathan Dray <jonathan.dray@gmail.com>
-Build-Depends: debhelper (>= 8.0.0)
+Build-Depends: debhelper (>= 9)
 Standards-Version: 3.9.4
 Homepage: https://code.google.com/p/go.net/
+Vcs-Git: https://github.com/spiroid/golang-go.net-dev.git
+Vcs-Browser: https://github.com/spiroid/golang-go.net-dev
 
 Package: golang-go.net-dev
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: supplementary Go networking libraries (development files)
  Supplementary Go networking libraries :
- - ipv4 / ipv6
- - proxy
- - websockets
+   - ipv4 / ipv6
+   - proxy
+   - websockets
  .
  This package contains the source.
