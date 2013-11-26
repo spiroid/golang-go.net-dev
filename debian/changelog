@@ -2,16 +2,4 @@ golang-go.net-dev (0.0~hg67397a11592e-1) unstable; urgency=low
 
   * Initial release (Closes: #726146)
 
-  * Debian package generation
-    * Bump debhelper version to 9
-    * Add Vcs-Git and Vcs-Browser pointing to the git repository on github
-    * License on files bundled in the debian directory set to BSD-3
-    * Obsolete debian/README.source removed
-    * debian/source/format file added
-    * close an ITP bug in the changelog
-
-  * Lintian validation fixes
-    * override the debian-watch-file-is-missing lintian warning
-    * fix package description format
-
  -- Jonathan Dray <jonathan.dray@gmail.com>  Sat, 23 Nov 2013 16:48:04 +0100
