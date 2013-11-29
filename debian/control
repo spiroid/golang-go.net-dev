@@ -5,8 +5,8 @@ Maintainer: Jonathan Dray <jonathan.dray@gmail.com>
 Build-Depends: debhelper (>= 9)
 Standards-Version: 3.9.4
 Homepage: https://code.google.com/p/go.net/
-Vcs-Git: https://github.com/spiroid/golang-go.net-dev.git
-Vcs-Browser: https://github.com/spiroid/golang-go.net-dev
+Vcs-Git: git://anonscm.debian.org/pkg-go/packages/golang-go.net.git
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=pkg-go/packages/golang-go.net.git;a=summary
 
 Package: golang-go.net-dev
 Architecture: all
