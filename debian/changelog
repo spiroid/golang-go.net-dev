@@ -1,3 +1,13 @@
+golang-go.net-dev (0.0~hg20131201-1) unstable; urgency=low
+
+  [ Michael Stapelberg ]
+  * update Vcs-Git location to point to alioth
+
+  [ Jonathan Dray ]
+  * new version number pattern for the package
+
+ -- Jonathan Dray <jonathan.dray@gmail.com>  Mon, 02 Dec 2013 20:02:16 +0100
+
 golang-go.net-dev (0.0~hg67397a11592e-1) unstable; urgency=low
 
   * Initial release (Closes: #726146)
