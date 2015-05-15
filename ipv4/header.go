@@ -29,6 +29,10 @@ var (
 //	http://tools.ietf.org/html/rfc1112
 // RFC 1122  Requirements for Internet Hosts
 //	http://tools.ietf.org/html/rfc1122
+// RFC 3678  Socket Interface Extensions for Multicast Source Filters
+//	http://tools.ietf.org/html/rfc3678
+// RFC 4607  Source-Specific Multicast for IP
+//	http://tools.ietf.org/html/rfc4607
 
 const (
 	Version      = 4  // protocol version
@@ -100,6 +104,7 @@ func (h *Header) Marshal() ([]byte, error) {
 		b[posTotalLen], b[posTotalLen+1] = byte(h.TotalLen>>8), byte(h.TotalLen)
 		b[posFragOff], b[posFragOff+1] = byte(flagsAndFragOff>>8), byte(flagsAndFragOff)
 	} else {
+		// TODO(mikio): fix potential misaligned memory access
 		*(*uint16)(unsafe.Pointer(&b[posTotalLen : posTotalLen+1][0])) = uint16(h.TotalLen)
 		*(*uint16)(unsafe.Pointer(&b[posFragOff : posFragOff+1][0])) = uint16(flagsAndFragOff)
 	}
@@ -121,6 +126,9 @@ func (h *Header) Marshal() ([]byte, error) {
 	return b, nil
 }
 
+// See http://www.freebsd.org/doc/en/books/porters-handbook/freebsd-versions.html.
+var freebsdVersion uint32
+
 // ParseHeader parses b as an IPv4 header.
 func ParseHeader(b []byte) (*Header, error) {
 	if len(b) < HeaderLen {
@@ -138,8 +146,12 @@ func ParseHeader(b []byte) (*Header, error) {
 		h.TotalLen = int(b[posTotalLen])<<8 | int(b[posTotalLen+1])
 		h.FragOff = int(b[posFragOff])<<8 | int(b[posFragOff+1])
 	} else {
+		// TODO(mikio): fix potential misaligned memory access
 		h.TotalLen = int(*(*uint16)(unsafe.Pointer(&b[posTotalLen : posTotalLen+1][0])))
-		h.TotalLen += hdrlen
+		if runtime.GOOS != "freebsd" || freebsdVersion < 1000000 {
+			h.TotalLen += hdrlen
+		}
+		// TODO(mikio): fix potential misaligned memory access
 		h.FragOff = int(*(*uint16)(unsafe.Pointer(&b[posFragOff : posFragOff+1][0])))
 	}
 	h.Flags = HeaderFlags(h.FragOff&0xe000) >> 13

@@ -5,16 +5,18 @@
 package ipv6_test
 
 import (
-	"code.google.com/p/go.net/ipv6"
 	"net"
 	"os"
 	"runtime"
 	"testing"
+
+	"golang.org/x/net/internal/iana"
+	"golang.org/x/net/ipv6"
 )
 
 func TestConnUnicastSocketOptions(t *testing.T) {
 	switch runtime.GOOS {
-	case "plan9", "windows":
+	case "nacl", "plan9", "solaris", "windows":
 		t.Skipf("not supported on %q", runtime.GOOS)
 	}
 	if !supportsIPv6 {
@@ -23,7 +25,7 @@ func TestConnUnicastSocketOptions(t *testing.T) {
 
 	ln, err := net.Listen("tcp6", "[::1]:0")
 	if err != nil {
-		t.Fatalf("net.Listen failed: %v", err)
+		t.Fatal(err)
 	}
 	defer ln.Close()
 
@@ -32,7 +34,7 @@ func TestConnUnicastSocketOptions(t *testing.T) {
 
 	c, err := net.Dial("tcp6", ln.Addr().String())
 	if err != nil {
-		t.Fatalf("net.Dial failed: %v", err)
+		t.Fatal(err)
 	}
 	defer c.Close()
 
@@ -50,7 +52,7 @@ var packetConnUnicastSocketOptionTests = []struct {
 
 func TestPacketConnUnicastSocketOptions(t *testing.T) {
 	switch runtime.GOOS {
-	case "plan9", "windows":
+	case "nacl", "plan9", "solaris", "windows":
 		t.Skipf("not supported on %q", runtime.GOOS)
 	}
 	if !supportsIPv6 {
@@ -63,7 +65,7 @@ func TestPacketConnUnicastSocketOptions(t *testing.T) {
 		}
 		c, err := net.ListenPacket(tt.net+tt.proto, tt.addr)
 		if err != nil {
-			t.Fatalf("net.ListenPacket(%q, %q) failed: %v", tt.net+tt.proto, tt.addr, err)
+			t.Fatal(err)
 		}
 		defer c.Close()
 
@@ -79,23 +81,29 @@ type testIPv6UnicastConn interface {
 }
 
 func testUnicastSocketOptions(t *testing.T, c testIPv6UnicastConn) {
-	tclass := DiffServCS0 | NotECNTransport
+	tclass := iana.DiffServCS0 | iana.NotECNTransport
 	if err := c.SetTrafficClass(tclass); err != nil {
-		t.Fatalf("ipv6.Conn.SetTrafficClass failed: %v", err)
+		switch runtime.GOOS {
+		case "darwin": // older darwin kernels don't support IPV6_TCLASS option
+			t.Logf("not supported on %q", runtime.GOOS)
+			goto next
+		}
+		t.Fatal(err)
 	}
 	if v, err := c.TrafficClass(); err != nil {
-		t.Fatalf("ipv6.Conn.TrafficClass failed: %v", err)
+		t.Fatal(err)
 	} else if v != tclass {
-		t.Fatalf("got unexpected traffic class %v; expected %v", v, tclass)
+		t.Fatalf("got %v; want %v", v, tclass)
 	}
 
+next:
 	hoplim := 255
 	if err := c.SetHopLimit(hoplim); err != nil {
-		t.Fatalf("ipv6.Conn.SetHopLimit failed: %v", err)
+		t.Fatal(err)
 	}
 	if v, err := c.HopLimit(); err != nil {
-		t.Fatalf("ipv6.Conn.HopLimit failed: %v", err)
+		t.Fatal(err)
 	} else if v != hoplim {
-		t.Fatalf("got unexpected hop limit %v; expected %v", v, hoplim)
+		t.Fatalf("got %v; want %v", v, hoplim)
 	}
 }

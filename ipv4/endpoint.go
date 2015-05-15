@@ -97,11 +97,17 @@ func (c *PacketConn) Close() error {
 // NewPacketConn returns a new PacketConn using c as its underlying
 // transport.
 func NewPacketConn(c net.PacketConn) *PacketConn {
-	return &PacketConn{
+	p := &PacketConn{
 		genericOpt:     genericOpt{Conn: c.(net.Conn)},
 		dgramOpt:       dgramOpt{PacketConn: c},
 		payloadHandler: payloadHandler{PacketConn: c},
 	}
+	if _, ok := c.(*net.IPConn); ok && sockOpts[ssoStripHeader].name > 0 {
+		if fd, err := p.payloadHandler.sysfd(); err == nil {
+			setInt(fd, &sockOpts[ssoStripHeader], boolint(true))
+		}
+	}
+	return p
 }
 
 // A RawConn represents a packet network endpoint that uses the IPv4
@@ -174,7 +180,7 @@ func NewRawConn(c net.PacketConn) (*RawConn, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := setIPv4HeaderPrepend(fd, true); err != nil {
+	if err := setInt(fd, &sockOpts[ssoHeaderPrepend], boolint(true)); err != nil {
 		return nil, err
 	}
 	return r, nil

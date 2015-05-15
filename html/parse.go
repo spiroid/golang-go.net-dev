@@ -10,7 +10,7 @@ import (
 	"io"
 	"strings"
 
-	a "code.google.com/p/go.net/html/atom"
+	a "golang.org/x/net/html/atom"
 )
 
 // A parser implements the HTML5 parsing algorithm:
@@ -1618,7 +1618,7 @@ func inSelectIM(p *parser) bool {
 			}
 		}
 	case CommentToken:
-		p.doc.AppendChild(&Node{
+		p.addChild(&Node{
 			Type: CommentNode,
 			Data: p.tok.Data,
 		})

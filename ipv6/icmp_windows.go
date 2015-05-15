@@ -4,19 +4,23 @@
 
 package ipv6
 
-type rawICMPFilter struct {
-	// TODO(mikio): Implement this
+type sysICMPv6Filter struct {
+	// TODO(mikio): implement this
 }
 
-func (f *rawICMPFilter) set(typ ICMPType, block bool) {
-	// TODO(mikio): Implement this
+func (f *sysICMPv6Filter) accept(typ ICMPType) {
+	// TODO(mikio): implement this
 }
 
-func (f *rawICMPFilter) setAll(block bool) {
-	// TODO(mikio): Implement this
+func (f *sysICMPv6Filter) block(typ ICMPType) {
+	// TODO(mikio): implement this
 }
 
-func (f *rawICMPFilter) willBlock(typ ICMPType) bool {
-	// TODO(mikio): Implement this
+func (f *sysICMPv6Filter) setAll(block bool) {
+	// TODO(mikio): implement this
+}
+
+func (f *sysICMPv6Filter) willBlock(typ ICMPType) bool {
+	// TODO(mikio): implement this
 	return false
 }

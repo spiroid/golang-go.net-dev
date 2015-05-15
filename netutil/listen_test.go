@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.3
+
+// (We only run this test on Go 1.3 because the HTTP client timeout behavior
+// was bad in previous releases, causing occasional deadlocks.)
+
 package netutil
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -45,7 +51,8 @@ func TestLimitListener(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			r, err := http.Get("http://" + l.Addr().String())
+			c := http.Client{Timeout: 3 * time.Second}
+			r, err := c.Get("http://" + l.Addr().String())
 			if err != nil {
 				t.Logf("Get: %v", err)
 				atomic.AddInt32(&failed, 1)
@@ -60,6 +67,37 @@ func TestLimitListener(t *testing.T) {
 	// We expect some Gets to fail as the kernel's accept queue is filled,
 	// but most should succeed.
 	if failed >= num/2 {
-		t.Errorf("too many Gets failed")
+		t.Errorf("too many Gets failed: %v", failed)
+	}
+}
+
+type errorListener struct {
+	net.Listener
+}
+
+func (errorListener) Accept() (net.Conn, error) {
+	return nil, errFake
+}
+
+var errFake = errors.New("fake error from errorListener")
+
+// This used to hang.
+func TestLimitListenerError(t *testing.T) {
+	donec := make(chan bool, 1)
+	go func() {
+		const n = 2
+		ll := LimitListener(errorListener{}, n)
+		for i := 0; i < n+1; i++ {
+			_, err := ll.Accept()
+			if err != errFake {
+				t.Fatalf("Accept error = %v; want errFake", err)
+			}
+		}
+		donec <- true
+	}()
+	select {
+	case <-donec:
+	case <-time.After(5 * time.Second):
+		t.Fatal("timeout. deadlock?")
 	}
 }
