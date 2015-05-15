@@ -9,68 +9,12 @@ import (
 	"testing"
 )
 
-func isLinkLocalUnicast(ip net.IP) bool {
-	return ip.To4() == nil && ip.To16() != nil && ip.IsLinkLocalUnicast()
-}
-
-func loopbackInterface() *net.Interface {
-	ift, err := net.Interfaces()
-	if err != nil {
-		return nil
-	}
-	for _, ifi := range ift {
-		if ifi.Flags&net.FlagLoopback == 0 || ifi.Flags&net.FlagUp == 0 {
-			continue
-		}
-		ifat, err := ifi.Addrs()
-		if err != nil {
-			continue
-		}
-		for _, ifa := range ifat {
-			switch ifa := ifa.(type) {
-			case *net.IPAddr:
-				if isLinkLocalUnicast(ifa.IP) {
-					return &ifi
-				}
-			case *net.IPNet:
-				if isLinkLocalUnicast(ifa.IP) {
-					return &ifi
-				}
-			}
-		}
-	}
-	return nil
-}
-
-func isMulticastAvailable(ifi *net.Interface) (net.IP, bool) {
-	if ifi == nil || ifi.Flags&net.FlagUp == 0 || ifi.Flags&net.FlagMulticast == 0 {
-		return nil, false
-	}
-	ifat, err := ifi.Addrs()
-	if err != nil {
-		return nil, false
-	}
-	for _, ifa := range ifat {
-		switch ifa := ifa.(type) {
-		case *net.IPAddr:
-			if isLinkLocalUnicast(ifa.IP) {
-				return ifa.IP, true
-			}
-		case *net.IPNet:
-			if isLinkLocalUnicast(ifa.IP) {
-				return ifa.IP, true
-			}
-		}
-	}
-	return nil, false
-}
-
 func connector(t *testing.T, network, addr string, done chan<- bool) {
 	defer func() { done <- true }()
 
 	c, err := net.Dial(network, addr)
 	if err != nil {
-		t.Errorf("net.Dial failed: %v", err)
+		t.Error(err)
 		return
 	}
 	c.Close()
@@ -81,30 +25,8 @@ func acceptor(t *testing.T, ln net.Listener, done chan<- bool) {
 
 	c, err := ln.Accept()
 	if err != nil {
-		t.Errorf("net.Listener.Accept failed: %v", err)
+		t.Error(err)
 		return
 	}
 	c.Close()
-}
-
-func transponder(t *testing.T, ln net.Listener, done chan<- bool) {
-	defer func() { done <- true }()
-
-	c, err := ln.Accept()
-	if err != nil {
-		t.Errorf("net.Listener.Accept failed: %v", err)
-		return
-	}
-	defer c.Close()
-
-	b := make([]byte, 128)
-	n, err := c.Read(b)
-	if err != nil {
-		t.Errorf("net.Conn.Read failed: %v", err)
-		return
-	}
-	if _, err := c.Write(b[:n]); err != nil {
-		t.Errorf("net.Conn.Write failed: %v", err)
-		return
-	}
 }

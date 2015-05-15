@@ -4,7 +4,7 @@
 
 package ipv6
 
-import "sync"
+import "golang.org/x/net/internal/iana"
 
 // An ICMPType represents a type of ICMP message.
 type ICMPType int
@@ -17,30 +17,41 @@ func (typ ICMPType) String() string {
 	return s
 }
 
-// An ICMPFilter represents an ICMP message filter for incoming
-// packets.
-type ICMPFilter struct {
-	mu sync.RWMutex
-	rawICMPFilter
+// Protocol returns the ICMPv6 protocol number.
+func (typ ICMPType) Protocol() int {
+	return iana.ProtocolIPv6ICMP
 }
 
-// Set sets the ICMP type and filter action to the filter.
-func (f *ICMPFilter) Set(typ ICMPType, block bool) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-	f.set(typ, block)
+// An ICMPFilter represents an ICMP message filter for incoming
+// packets. The filter belongs to a packet delivery path on a host and
+// it cannot interact with forwarding packets or tunnel-outer packets.
+//
+// Note: RFC 2460 defines a reasonable role model. A node means a
+// device that implements IP. A router means a node that forwards IP
+// packets not explicitly addressed to itself, and a host means a node
+// that is not a router.
+type ICMPFilter struct {
+	sysICMPv6Filter
+}
+
+// Accept accepts incoming ICMP packets including the type field value
+// typ.
+func (f *ICMPFilter) Accept(typ ICMPType) {
+	f.accept(typ)
+}
+
+// Block blocks incoming ICMP packets including the type field value
+// typ.
+func (f *ICMPFilter) Block(typ ICMPType) {
+	f.block(typ)
 }
 
 // SetAll sets the filter action to the filter.
 func (f *ICMPFilter) SetAll(block bool) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
 	f.setAll(block)
 }
 
 // WillBlock reports whether the ICMP type will be blocked.
 func (f *ICMPFilter) WillBlock(typ ICMPType) bool {
-	f.mu.RLock()
-	defer f.mu.RUnlock()
 	return f.willBlock(typ)
 }
