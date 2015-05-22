@@ -1,13 +1,13 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: go.net
-Source: https://code.google.com/p/go.net/
+Upstream-Name: x/net
+Source: https://github.com/golang/net
 
 Files: *
-Copyright: 2011-2013 The Go Authors
+Copyright: 2011-2015 The Go Authors
 License: BSD-3-clause
 
 Files: debian/*
-Copyright: 2013 Jonathan Dray <jonathan.dray@gmail.com>
+Copyright: 2013-2015 Jonathan Dray <jonathan.dray@gmail.com>
 License: BSD-3-clause
 
 License: BSD-3-Clause

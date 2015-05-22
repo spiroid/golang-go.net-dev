@@ -1,3 +1,10 @@
+golang-go.net-dev (0.1~git20150522-1) unstable; urgency=low
+
+  * Imported Upstream version 0.1~git20150522
+  * Package migation to new x/net scheme
+
+ -- Jonathan Dray <jonathan.dray@gmail.com>  Fri, 22 May 2015 12:20:03 +0200
+
 golang-go.net-dev (0.0~hg20150515-1) unstable; urgency=low
 
   * Imported Upstream version 0.0~hg20150515
